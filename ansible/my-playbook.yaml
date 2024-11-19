@@ -20,7 +20,7 @@
     - name: Create new linux user
       user:
         name: rodyb
-        groups: "{{user_groups}}"
+        groups: docker
 
 - name: Install Docker-compose as Docker CLI plugin
   hosts: aws_ec2
