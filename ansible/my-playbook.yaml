@@ -1,0 +1,83 @@
+- name: Install Docker
+  hosts: aws_ec2
+  become: yes
+  tasks:
+    - name: Install Docker
+      yum:
+        name: docker
+        update_cache: yes
+        state: present
+
+    - name: Start docker daemon
+      systemd:
+        name: docker
+        state: started
+
+- name: Create new linux user
+  hosts: aws_ec2
+  become: yes
+  tasks:
+    - name: Create new linux user
+      user:
+        name: rodyb
+        groups: "{{user_groups}}"
+
+- name: Install Docker-compose as Docker CLI plugin
+  hosts: aws_ec2
+  become: yes
+  tasks:
+    - name: Create docker-compose plugin directory
+      file:
+        path: /usr/libexec/docker/cli-plugins
+        state: directory
+
+    - name: Get architecture
+      shell: uname -m
+      register: remote_arch
+
+    - name: Install docker-compose plugin
+      get_url:
+        url: "https://github.com/docker/compose/releases/latest/download/docker-compose-linux-{{ remote_arch.stdout }}"
+        dest: /usr/libexec/docker/cli-plugins/docker-compose
+        mode: '0755'
+
+- name: Add ec2-user to docker group and verify
+  hosts: aws_ec2
+  become: yes
+  tasks:
+    - name: Add ec2-user to docker group
+      user:
+        name: ec2-user
+        groups: docker
+        append: yes
+
+    - name: Reconnect Session
+      meta: reset_connection
+
+    - name: Verify ec2-user docker group membership
+      command: groups ec2-user
+      register: user_groups_check
+      ignore_errors: yes
+
+    - name: Display ec2-user groups
+      debug:
+        var: user_groups_check.stdout
+
+- name: Start docker containers
+  hosts: aws_ec2
+  become: yes
+  become_user: rodyb
+  vars_files:
+    - project-vars
+  tasks:
+    - name: Copy docker compose
+      copy:
+        src: /Users/rodybothe/Documents/devops-course-nana/bootcamp-java-mysql-project/docker-compose-full.yaml
+        dest: /home/rodyb/docker-compose.yaml
+    - name: Docker login
+      docker_login:
+        username: rodybothe@gmail.com
+        password: "{{docker_password}}"
+    - name: Start containers from compose
+      community.docker.docker_compose_v2:
+        project_src: /home/rodyb
