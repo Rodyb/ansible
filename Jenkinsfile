@@ -9,9 +9,9 @@ pipeline {
                 script {
                     echo "Copying all necessary files to Ansible control node"
                     sshagent(['ansible-server-key']) {
-                        sh "scp -o StrictHostKeyChecking=no ansible/* root@167.172.38.180:/root"
+                        sh "scp -o StrictHostKeyChecking=no ansible/* root@161.35.88.101:/root"
                         withCredentials([sshUserPrivateKey(credentialsId: 'ec2-server-key', keyFileVariable: 'keyfile', usernameVariable: 'user')]) {
-                            sh 'scp $keyfile root@167.172.38.180:/root/ssh-key.pem'
+                            sh 'scp $keyfile root@161.35.88.101:/root/ssh-key.pem'
                         }
                     }
                 }
@@ -25,7 +25,7 @@ pipeline {
                     withCredentials([string(credentialsId: 'docker-password-secret', variable: 'DOCKER_PASSWORD')]) {
                         def remote = [:]
                         remote.name = "ansible-server"
-                        remote.host = "167.172.38.180"
+                        remote.host = "161.35.88.101"
                         remote.allowAnyHosts = true
 
                         withCredentials([sshUserPrivateKey(credentialsId: 'ansible-server-key', keyFileVariable: 'keyfile', usernameVariable: 'user')]) {
