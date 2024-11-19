@@ -1,3 +1,4 @@
+---
 - name: Install Docker
   hosts: all
   become: yes
