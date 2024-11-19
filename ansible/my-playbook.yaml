@@ -1,5 +1,5 @@
 - name: Install Docker
-  hosts: aws_ec2
+  hosts: all
   become: yes
   tasks:
     - name: Install Docker
@@ -14,7 +14,7 @@
         state: started
 
 - name: Create new linux user
-  hosts: aws_ec2
+  hosts: all
   become: yes
   tasks:
     - name: Create new linux user
@@ -23,7 +23,7 @@
         groups: docker
 
 - name: Install Docker-compose as Docker CLI plugin
-  hosts: aws_ec2
+  hosts: all
   become: yes
   tasks:
     - name: Create docker-compose plugin directory
@@ -42,7 +42,7 @@
         mode: '0755'
 
 - name: Add ec2-user to docker group and verify
-  hosts: aws_ec2
+  hosts: all
   become: yes
   tasks:
     - name: Add ec2-user to docker group
@@ -64,7 +64,7 @@
         var: user_groups_check.stdout
 
 - name: Start docker containers
-  hosts: aws_ec2
+  hosts: all
   become: yes
   become_user: rodyb
   vars_files:
@@ -77,7 +77,7 @@
     - name: Docker login
       docker_login:
         username: rodybothe@gmail.com
-        password: Blowen85_
+        password: "{{docker_password}}"
     - name: Start containers from compose
       community.docker.docker_compose_v2:
         project_src: /home/rodyb
